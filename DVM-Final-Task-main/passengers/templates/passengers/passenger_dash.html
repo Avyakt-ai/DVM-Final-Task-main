@@ -1,0 +1,102 @@
+{% extends 'passengers/base.html' %}
+{% block title %}Passenger Dashboard{% endblock %}
+{% block content %}
+    {% load static %}
+    {% if messages %}
+        <div class="container mt-4">
+            <div class="alert alert-success" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <style>
+        body {
+            background-image: url("{% static 'passengers/dvm.jpg' %}");
+            background-size: cover; /* Adjust as needed */
+            color: #fff;
+        }
+
+        .jumbotron {
+            background-color: #04b3c2;
+            color: #fff;
+            padding: 30px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .bg-1 {
+            background: #2d2d30;
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .bg-1 h3 {
+            color: #fff;
+        }
+
+        .container p {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .spaced-text {
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-in-out;
+        }
+
+        .spaced-text a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .spaced-text a:hover {
+            color: #2078ae;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <div class="jumbotron text-center">
+        <h1 class="display-4">PASSENGERS DASHBOARD</h1>
+    </div>
+
+    <div class="bg-1">
+        <div class="container">
+            <h3 class="spaced-text">INFO</h3>
+            <p class="spaced-text">You can have access to the following services:</p>
+            <p class="spaced-text"><a href="{% url 'search_trains' %}">BOOK TICKET</a></p>
+            <p class="spaced-text"><a href="{% url 'your_bookings' %}">YOUR BOOKINGS</a></p>
+            <p class="spaced-text"><a href="{% url 'account_page' %}">ACCOUNT</a></p>
+            <p class="spaced-text"><a href="#">COMPLAINT</a></p>
+        </div>
+    </div>
+{% endblock %}

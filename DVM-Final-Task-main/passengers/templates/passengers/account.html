@@ -1,0 +1,89 @@
+{% extends 'passengers/base.html' %}
+{% block title %}Passenger Dashboard{% endblock %}
+{% block content %}
+<style>
+    .well {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-top: 20px;
+    }
+
+    .well h2 {
+        color: #3498db;
+    }
+
+    .well p {
+        margin-bottom: 10px;
+    }
+
+    .alert {
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+
+    button[data-toggle="collapse"] {
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    button[data-toggle="collapse"]:hover {
+        background-color: #2078ae;
+    }
+
+    form {
+        margin-top: 20px;
+    }
+
+    button[type="submit"] {
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #2078ae;
+    }
+</style>
+
+<br>
+<br>
+
+<div class="well text-center">
+    <h2><strong>ACCOUNT DETAILS</strong></h2>
+    <p>NAME: {{user}}</p>
+    <p>EMAIL: {{user.email}}</p>
+    <p>WALLET AMOUNT: ₹{{user.passengerprofile.wallet_balance}}</p>
+</div>
+
+{% for message in messages %}
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<button type="button" data-toggle="collapse" data-target="#demo">Add Money</button>
+
+<div id="demo" class="collapse">
+    <div class="well">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ add_money_form }}
+            <button type="submit" onclick="return confirm('Are you sure you want to add the money to your Account')">
+                Add Money
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

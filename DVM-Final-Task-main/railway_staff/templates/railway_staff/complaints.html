@@ -1,0 +1,60 @@
+{% extends 'railway_staff/base.html' %}
+{% block title %}Add Trains{% endblock %}
+{% block content %}
+
+    <style>
+        .complaint-block {
+            background-color: #f9f9f9;
+            color: #333;
+            border-left: 5px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .complaint-block img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <div class="container">
+        <h1>Unread Complaints</h1>
+        {% for complaint in all_complaint %}
+            {% if not complaint.status %}
+                <div class="complaint-block">
+                    <ul>{{ complaint.description }}</ul>
+                    {% if complaint.image %}
+                        <img src="{{ complaint.image.url }}" alt="Complaint Image">
+                    {% endif %}
+                    <p>Complaint Date: {{ complaint.date_complaint }}</p>
+                    <footer>User: {{ complaint.user }}</footer>
+                    <form method="post" action="{% url 'mark_complaint_viewed' complaint.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Mark as Viewed</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="button" data-toggle="collapse" data-target="#demo">View All Complaints</button>
+        <div id="demo" class="collapse">
+            <h1>All Complaints</h1>
+            {% for complaint in all_complaint %}
+                <div class="complaint-block">
+                    <ul>{{ complaint.description }}</ul>
+                    <p>Complaint Date: {{ complaint.date_complaint }}</p>
+                    <p>User Name: {{ complaint.user }}</p>
+                    {% if complaint.image %}
+                        <img src="{{ complaint.image.url }}" alt="Complaint Image">
+                    {% endif %}
+                    <p>Complaint Viewed: {{ complaint.status }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
+ %}

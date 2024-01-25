@@ -1,0 +1,79 @@
+{% extends 'passengers/base.html' %}
+{% block title %}Update Passenger Information{% endblock %}
+{% block content %}
+    <br>
+    <style>
+        .abc {
+            background: #2d2d30;
+            color: #bdbdbd;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .go-back-btn {
+            width: 80px;
+            height: 30px;
+            border: none;
+            background-color: #0056b3;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: absolute;
+            top: 80px;
+            left: 30px;
+        }
+
+        .go-back-btn:hover {
+            background-color: #495057;
+        }
+    </style>
+    {% if messages %}
+        <div class="alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% for passenger_info, form in passenger_informations %}
+        <h3>Passenger {{ passenger_info.passenger_name }}</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="passenger_name" value="{{ passenger_info.passenger_name }}">
+            <input type="hidden" name="passenger_email" value="{{ passenger_info.passenger_email }}">
+            <button type="submit" class="btn btn-primary">Update Passenger Information</button>
+        </form>
+        <br>
+    {% endfor %}
+    <button class="btn btn-secondary go-back-btn" onclick="goBack()">Back</button>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+{% endblock %}

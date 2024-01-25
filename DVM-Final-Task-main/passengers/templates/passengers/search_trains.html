@@ -1,0 +1,111 @@
+{% extends 'passengers/base.html' %}
+{% block title %}Search Trains{% endblock %}
+{% block content %}
+    <style>
+        .abc {
+            background: #2d2d30;
+            color: #bdbdbd;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        .arrow {
+            font-size: 30px; /* Adjust the font size to increase the arrow size */
+            /*display: inline-block; !* Ensures the size applies only to the arrow *!*/
+            /*line-height: 1; !* Helps in centering the arrow *!*/
+        }
+    </style>
+    <br>
+    <br>
+    {% if error_message %}
+        <div class="alert alert-warning text-center">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    {% for message in messages %}
+        <div class="alert alert-warning text-center">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <div class="well text-center">
+        <h2><strong>BOOK TICKET</strong></h2>
+
+        <form method="GET" action="{% url 'search_trains' %}">
+            {% csrf_token %}
+
+            <label for="departure_station">Departure Station:</label>
+            <select id="departure_station" name="departure_station">
+                {% for station in stations %}
+                    <option value="{{ station.id }}">{{ station.station_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="destination_station">Destination Station:</label>
+            <select id="destination_station" name="destination_station">
+                {% for station in stations %}
+                    <option value="{{ station.id }}">{{ station.station_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date">
+
+            <label for="num_of_passengerss">Number of Passengers:</label>
+            <input type="number" id="num_of_passengerss" name="num_of_passengers" min="1" required>
+
+            <button type="submit">Search Trains</button>
+        </form>
+        {% if available_trains %}
+            <h2>Available Trains:</h2>
+            <ul>
+                {% for train in available_trains %}
+                    <li>
+                        <div class="abc">
+                            <h2><strong>Train Name: {{ train.train_name }}</strong></h2>
+                            <p>Departure Date: {{ search_date|date:'Y-m-d' }}</p>
+                            <p>Day: {{ dow }}</p>
+                            <p class="arrow"> {{ train.departure_time }} Station {{ train.departure_station }} &#8594;
+                                {{ train.reaching_time }} Station {{ train.destination_station }}</p>
+                            <form method="POST" action="{% url 'book_ticket' %}">
+                                {% csrf_token %}
+                                {{ formset.management_form }}
+                                {% for form in formset %}
+                                    {{ form.as_p }}
+                                {% endfor %}
+                                <input type="hidden" name="selected_train_id" value="{{ train.id }}">
+                                <input type="hidden" name="date" value="{{ search_date|date:'Y-m-d' }}">
+                                <input type="hidden" name="num_of_passengers" value="{{ num_of_passengers }}">
+                                <button type="submit" name="seat_type" value="general"
+                                        onclick="return confirm('Are you sure you want to confirm your booking')">
+                                    General ₹{{ train.general_fare }}
+                                </button>
+                                <button type="submit" name="seat_type" value="sleeper"
+                                        onclick="return confirm('Are you sure you want to confirm your booking')">
+                                    Sleeper ₹{{ train.sleeper_fare }}
+                                </button>
+                                <button type="submit" name="seat_type" value="3rd AC"
+                                        onclick="return confirm('Are you sure you want to confirm your booking')">
+                                    3rd AC ₹{{ train.third_ac_fare }}
+                                </button>
+                                <button type="submit" name="seat_type" value="2nd AC"
+                                        onclick="return confirm('Are you sure you want to confirm your booking')">
+                                    2nd AC ₹{{ train.second_ac_fare }}
+                                </button>
+                                <button type="submit" name="seat_type" value="1st AC"
+                                        onclick="return confirm('Are you sure you want to confirm your booking')">
+                                    1st AC ₹{{ train.first_ac_fare }}
+                                </button>
+                            </form>
+                        </div>
+                        <br>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No available trains found for the selected criteria {{ dow }}.</p>
+        {% endif %}
+
+
+    </div>
+
+{% endblock %}

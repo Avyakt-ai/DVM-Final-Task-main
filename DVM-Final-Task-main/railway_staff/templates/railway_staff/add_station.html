@@ -1,0 +1,18 @@
+{% extends 'railway_staff/base.html' %}
+{% block title %}Add Trains{% endblock %}
+{% block content %}
+    <br>
+    {% for message in messages %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <div class="well">
+        <h1>Add Station</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+{% endblock %}

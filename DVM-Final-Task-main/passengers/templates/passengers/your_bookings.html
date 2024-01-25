@@ -1,0 +1,135 @@
+{% extends 'passengers/base.html' %}
+{% block title %}Search Trains{% endblock %}
+{% block content %}
+    <style>
+        .abc {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .arrow {
+            font-size: 30px;
+            margin-top: 10px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        .well {
+            margin-top: 20px;
+        }
+
+        button[type="submit"] {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2078ae;
+        }
+    </style>
+
+    {% if messages %}
+        <div class="alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="well">
+        {% if upcoming_journeys %}
+            <h2>Upcoming Journeys</h2>
+            <ul>
+                {% for journey in upcoming_journeys %}
+                    <li>
+                        <div class="abc text-center">
+                            {% if journey.is_cancelled %}
+                                <h2>JOURNEY IS CANCELLED</h2>
+                            {% endif %}
+                            <h3>Train: {{ journey.train.train_name }}</h3>
+                            <p>Departure Date & Time: {{ journey.complete_departure_datetime|date:"Y-m-d | H:i:s" }}</p>
+                            <p>Number of Passengers: {{ journey.num_of_passengers }}</p>
+                            <p>Total Fare: ₹{{ journey.total_fare }}</p>
+                            <p class="arrow"> {{ journey.train.departure_time }}
+                                Station {{ journey.train.departure_station }} &#8594; {{ journey.train.reaching_time }}
+                                Station {{ journey.train.destination_station }}</p>
+                            {% if not journey.is_cancelled %}
+                                {% with time_left=journey.complete_departure_datetime|timeuntil %}
+                                    {% with time_diff=journey.time_diff_hours %}
+                                        {% if time_diff > 6 %}
+                                            <p>Time Left: {{ time_left }} </p>
+                                            <form method="post" action="{% url 'cancel_booking' journey.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                        onclick="return confirm('Are you sure you want to cancel the booking, Your money will be refunded.')">
+                                                    Cancel Booking
+                                                </button>
+                                            </form>
+                                            <br>
+                                            <form method="post" action="{% url 'download_booking' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="booking_id" value="{{ journey.id }}">
+                                                <button type="submit">Download PDF</button>
+                                            </form>
+                                            <br>
+                                            <form method="post" action="{% url 'update_passengers' journey.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit">
+                                                    Update Passengers
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <p>Time Left: {{ time_left }} </p>
+                                            <p>Cancellation period expired</p>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No Upcoming journey to show</p>
+        {% endif %}
+    </div>
+
+    <div class="well">
+        {% if past_journeys %}
+            <h2>Past Journeys</h2>
+            <ul>
+                {% for journey in past_journeys %}
+                    <li>
+                        <div class="abc text-center">
+                            <h3>Train: {{ journey.train.train_name }}</h3>
+                            <p>Departure Date: {{ journey.departure_date }}</p>
+                            <p>Number of Passengers: {{ journey.num_of_passengers }}</p>
+                            <p>Total Fare: {{ journey.total_fare }}</p>
+                            <p class="arrow"> {{ journey.train.departure_time }}
+                                Station {{ journey.train.departure_station }} &#8594;
+                                {{ journey.train.reaching_time }} Station {{ journey.train.destination_station }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No past journey to show</p>
+        {% endif %}
+    </div>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <title>Not Authorized</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 50px;
+            background-image: url("{% static 'passengers/dvm.jpg' %}");
+            background-size: cover; /* Adjust as needed */
+            color: #fff;
+        }
+
+        p {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 48px;
+        }
+
+        .spaced-text {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spaced-text a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .spaced-text a:hover {
+            color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<br>
+
+
+<p>Sorry, but you are not authorized to view this page.</p>
+
+<p class="spaced-text"><a href="{% url 'passenger_dashboard' %}" class="btn btn-secondary btn-block">Go To Passenger
+    Dashboard</a></p>
+</body>
+</html>

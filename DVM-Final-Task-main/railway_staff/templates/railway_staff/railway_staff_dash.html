@@ -1,0 +1,40 @@
+{% extends 'railway_staff/base.html' %}
+{% block title %}Staff Dashboard{% endblock %}
+{% block content %}
+<style>
+    .container {
+        padding: 30px;
+    }
+
+    .bg-1 {
+        background: #2d2d30;
+        color: #bdbdbd;
+        padding: 30px;
+    }
+
+    .bg-1 h3 {
+        color: #fff;
+    }
+
+    .container p {
+        text-align: left; /* Align the text to the left */
+    }
+</style>
+<br>
+<br>
+<div class="jumbotron text-center" style="background-color: white;">
+    <h1>RAILWAY ADMIN DASHBOARD</h1>
+</div>
+<br>
+<div class="bg-1">
+    <div class="container">
+        <h3 class="spaced-text1 text-center">INFO</h3>
+        <ul></ul>
+        <p class="spaced-text">You can have access to the following services.</p>
+        <p class="spaced-text"><a href="{% url 'add_train' %}">ADD TRAINS</a></p>
+        <p class="spaced-text"><a href="{% url 'train_schedules' %}">TRAIN SCHEDULES</a></p>
+        <p class="spaced-text"><a href="{% url 'update_trains' %}">UPDATE TRAINS</a></p>
+        <p class="spaced-text"><a href="{% url 'complaints' %}">COMPLAINTS</a></p>
+    </div>
+</div>
+{% endblock %}

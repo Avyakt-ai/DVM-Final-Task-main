@@ -1,0 +1,22 @@
+{% extends 'railway_staff/base.html' %}
+{% block title %}Train Schedules{% endblock %}
+{% block content %}
+    <div class="well">
+        <h1>Running Trains</h1>
+        {% for train_sch in running_trains %}
+            <div class="well">
+                <ul>
+                    <li>Train Name: {{ train_sch.train }}</li>
+                    <li>Departure Date: {{ train_sch.departure_date }}</li>
+                    <li>Arrival Date: {{ train_sch.arrival_date }}</li>
+                    <li>Available Seats: {{ train_sch.available_seats }}</li>
+                </ul>
+                <form method="post" action="{% url 'export_excel' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="selected_schedule" value="{{ train_sch.id }}">
+                    <button type="submit">Export Reservations</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
