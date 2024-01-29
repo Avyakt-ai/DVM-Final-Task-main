@@ -11,7 +11,7 @@ class Station(models.Model):
 
 # Here train is treated like a journey, that means that if we have a train named 1A going from A to B on monday at 8am and the same train is coming back to A at 9am then these two train is treated as different.
 class Train(models.Model):
-    station_choices = [(item.station_name, item.station_name) for item in Station.objects.all()]
+    # station_choices = [(item.station_name, item.station_name) for item in Station.objects.all()]
     train_name = models.CharField(max_length=50)
     monday = models.BooleanField(default=False)
     tuesday = models.BooleanField(default=False)
@@ -20,8 +20,8 @@ class Train(models.Model):
     friday = models.BooleanField(default=False)
     saturday = models.BooleanField(default=False)
     sunday = models.BooleanField(default=False)
-    departure_station = models.CharField(max_length=100, choices=station_choices)
-    destination_station = models.CharField(max_length=100, choices=station_choices)
+    departure_station = models.CharField(max_length=100)  # choices=station_choices
+    destination_station = models.CharField(max_length=100)
     departure_time = models.TimeField(default=timezone.now)
     reaching_time = models.TimeField(default=timezone.now)
     general_fare = models.DecimalField(default=80, max_digits=8, decimal_places=2)

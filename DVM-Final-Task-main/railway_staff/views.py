@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .forms import *
+from .forms import StationForm, TrainForm
 from django.shortcuts import get_object_or_404
-from .models import *
+from .models import Train, TrainSchedule, PassengerInformation, Booking
 from django.core.management import call_command
 from importlib import reload
 from railway_staff import models
@@ -16,7 +15,6 @@ from openpyxl import Workbook
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.models import User
 
 
 def is_railway_admin(user):
@@ -24,7 +22,8 @@ def is_railway_admin(user):
 
 
 def not_authorized(request):
-    return render(request,'railway_staff/not_authorized.html')
+    return render(request, 'railway_staff/not_authorized.html')
+
 
 def railway_staff_login(request):
     if request.method == 'POST':
@@ -41,6 +40,7 @@ def railway_staff_login(request):
 
     return render(request, 'railway_staff/railway_staff_login.html')  # Render the login form
 
+
 @user_passes_test(is_railway_admin, login_url='not_authorized')
 def railway_staff_dash(request):
     return render(request, 'railway_staff/railway_staff_dash.html')
@@ -52,7 +52,7 @@ def add_trains(request):
         form = TrainForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Train Added Successfully')
+            messages.success(request, 'Train Added Successfully')
             return redirect('add_train')  # Redirect to a success page after saving the train
     else:
         form = TrainForm()
@@ -69,13 +69,12 @@ def add_station(request):
             reload(models)
             call_command('makemigrations')
             call_command('migrate')
-            messages.success(request, f'Station Added Successfully')
+            messages.success(request, 'Station Added Successfully')
             return redirect('add_station')
     else:
-            form = StationForm()
+        form = StationForm()
 
     return render(request, 'railway_staff/add_station.html', {'form': form})
-
 
 
 @user_passes_test(is_railway_admin, login_url='railway_staff_login')
@@ -108,11 +107,11 @@ def update_trains(request):
                 form = TrainForm(request.POST, instance=selected_train)
                 if form.is_valid():
                     form.save()
-                    messages.success(request, f'Train Updated Successfully')
+                    messages.success(request, 'Train Updated Successfully')
                     return redirect('update_trains')  # Redirect to a success page after updating the train
             elif request.POST['action'] == 'button2':
                 selected_train.delete()
-                messages.success(request, f'Train Deleted Successfully')
+                messages.success(request, 'Train Deleted Successfully')
                 return redirect('update_trains')
 
     return render(request, 'railway_staff/update_trains.html', {
@@ -133,7 +132,7 @@ class ExportReservationsView(View):
         wb = Workbook()
         ws = wb.active
 
-        headers = ['Booking ID', 'Booked By', 'Passenger Name', 'Passenger Email','Seat Type', 'Seat no.', 'Train Name', 'Departure Date', 'Fare Per-Head', 'Is Cancelled']
+        headers = ['Booking ID', 'Booked By', 'Passenger Name', 'Passenger Email', 'Seat Type', 'Seat no.', 'Train Name', 'Departure Date', 'Fare Per-Head', 'Is Cancelled']
         ws.append(headers)
 
         for data in reservations_data:
@@ -149,7 +148,7 @@ class ExportReservationsView(View):
                     passenger.seat_no,
                     data.train.train_name,
                     data.train_sch.departure_date,  # Use train_schedule departure_date
-                    data.total_fare/data.num_of_passengers,
+                    data.total_fare / data.num_of_passengers,
                     data.is_cancelled
                 ]
                 ws.append(reservation_data)

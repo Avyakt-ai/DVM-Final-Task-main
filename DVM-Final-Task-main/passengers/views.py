@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import *
-from railway_staff.models import *
-from datetime import datetime, time
-from .models import *
+from .forms import UserRegisterForm, UpdatePassengerInformaitonForm, BookingForm, PassengerInformationForm, \
+    ComplaintForm, AddMoneyForm
+from railway_staff.models import Station, PassengerInformation, TrainSchedule, Train, Booking
+from datetime import datetime
+from .models import timezone
 from django.urls import reverse
 from django.shortcuts import redirect, get_object_or_404
 from datetime import timedelta
@@ -26,8 +27,7 @@ def passenger_register(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Your account has been created! You can now login')
+            messages.success(request, 'Your account has been created! You can now login')
             form.save()
             return redirect('passenger_login')
     else:
@@ -132,8 +132,6 @@ def book_ticket(request):
 
         search_date = request.POST.get('date')
 
-
-
         if booking_form.is_valid():
             selected_train_id = request.POST.get('selected_train_id')
             selected_train = Train.objects.get(id=selected_train_id)
@@ -157,15 +155,15 @@ def book_ticket(request):
             # Retrieve other passenger details from the form as needed
             total_fare = 0.0
             if seat_type == 'general':
-                total_fare = selected_train.general_fare*num_of_passengers
+                total_fare = selected_train.general_fare * num_of_passengers
             elif seat_type == 'sleeper':
-                total_fare = selected_train.sleeper_fare*num_of_passengers
+                total_fare = selected_train.sleeper_fare * num_of_passengers
             elif seat_type == '3rd AC':
-                total_fare = selected_train.third_ac_fare*num_of_passengers
+                total_fare = selected_train.third_ac_fare * num_of_passengers
             elif seat_type == '2nd AC':
-                total_fare = selected_train.second_ac_fare*num_of_passengers
+                total_fare = selected_train.second_ac_fare * num_of_passengers
             elif seat_type == '1st AC':
-                total_fare = selected_train.first_ac_fare*num_of_passengers
+                total_fare = selected_train.first_ac_fare * num_of_passengers
 
             passenger_profile = request.user.passengerprofile
             available_train_schedule = TrainSchedule.objects.get(
@@ -206,6 +204,7 @@ def book_ticket(request):
                             seat_type=seat_type,
                             seat_no=seat_no
                         )
+                        new_passenger_object.save()
                         seat_no -= 1
                     response = generate_booking_pdf(new_booking)
                     for form in formset:
@@ -228,8 +227,9 @@ def book_ticket(request):
                                     'Subject': subject,
                                     'TextPart': message,
                                     'HTMLPart': html_content,
-                                    'Attachments': [{'ContentType': 'application/pdf', 'Filename': f'booking_{new_booking.id}.pdf',
-                                                     'Base64Content': encode_pdf(response.content)}]
+                                    'Attachments': [
+                                        {'ContentType': 'application/pdf', 'Filename': f'booking_{new_booking.id}.pdf',
+                                         'Base64Content': encode_pdf(response.content)}]
                                 }
                             ]
                         }
@@ -239,13 +239,14 @@ def book_ticket(request):
                         # Check the result if needed
                         print(result.status_code)
                         print(result.json())
-                    messages.success(request, f'Your Booking for {num_of_passengers} passengers with DVM Railway is Confirmed')
+                    messages.success(request,
+                                     f'Your Booking for {num_of_passengers} passengers with DVM Railway is Confirmed')
 
                 return redirect('your_bookings')  # Redirect to success page after successful booking
             else:
-                if num_of_passengers > available_train_schedule.available_seats and passenger_profile.wallet_balance>=total_fare:
+                if num_of_passengers > available_train_schedule.available_seats and passenger_profile.wallet_balance >= total_fare:
                     error_message = 'Not enough seats available'
-                elif passenger_profile.wallet_balance<total_fare and num_of_passengers <= available_train_schedule.available_seats:
+                elif passenger_profile.wallet_balance < total_fare and num_of_passengers <= available_train_schedule.available_seats:
                     error_message = 'Insufficient Funds'
                 else:
                     error_message = 'Not enough seats and Insufficient Funds'
@@ -335,11 +336,12 @@ def cancel_booking_view(request, booking_id):
         mailjet = Client(auth=(mailjet_api_key, mailjet_api_secret), version='v3.1')
         for passenger_info in passenger_informations:
             subject = 'Train Ticket Cancellation'
-            message = f'Your booking has been cancelled.'
+            message = 'Your booking has been cancelled.'
             from_email = 'avyakt.seven@gmail.com'
             to_email = passenger_info.passenger_email
-            html_content = (f'<h2>Dear {passenger_info.passenger_name},</h2><p>Your booking for the journey from station {booking.train.departure_station} to station {booking.train.destination_station} on date {booking.departure_date} has been cancelled by <strong>{booking.passenger.user}</strong>.</p>'
-                            f'<p>The booking amount will be refunded to the beneficiary accounts.</p><br><br><p> Contact <strong>DVM</strong> in case of any problems.</p><p>Phone no.: +91 8817928004</p>')
+            html_content = (
+                f'<h2>Dear {passenger_info.passenger_name},</h2><p>Your booking for the journey from station {booking.train.departure_station} to station {booking.train.destination_station} on date {booking.departure_date} has been cancelled by <strong>{booking.passenger.user}</strong>.</p>'
+                f'<p>The booking amount will be refunded to the beneficiary accounts.</p><br><br><p> Contact <strong>DVM</strong> in case of any problems.</p><p>Phone no.: +91 8817928004</p>')
             data = {
                 'Messages': [
                     {
@@ -351,8 +353,8 @@ def cancel_booking_view(request, booking_id):
                     }
                 ]
             }
-
             result = mailjet.send.create(data=data)
+            print(result)
 
     return redirect('your_bookings')  # Redirect back to the bookings page after cancellation
 
@@ -366,7 +368,8 @@ def update_passengers(request, booking_id):
         selected_passenger_email = request.POST.get('passenger_email')
         for passenger_info in passenger_informations:
             if passenger_info.passenger_name == selected_passenger_name and passenger_info.passenger_email == selected_passenger_email:
-                form = UpdatePassengerInformaitonForm(request.POST, instance=passenger_info, prefix=str(selected_passenger_name))
+                form = UpdatePassengerInformaitonForm(request.POST, instance=passenger_info,
+                                                      prefix=str(selected_passenger_name))
                 if form.is_valid():
                     form.save()
                     # Below sending an email to the updated passenger.
@@ -375,7 +378,7 @@ def update_passengers(request, booking_id):
                     mailjet = Client(auth=(mailjet_api_key, mailjet_api_secret), version='v3.1')
                     response = generate_booking_pdf(booking)
                     subject = 'Train Ticket Updated information'
-                    message = f'Your Booking informatin has been updated by {request.user.username}.'
+                    message = f'Your Booking information has been updated by {request.user.username}.'
                     from_email = 'avyakt.seven@gmail.com'
                     to_email = selected_passenger_email
                     html_content = (
@@ -395,10 +398,11 @@ def update_passengers(request, booking_id):
                             }
                         ]
                     }
-
                     result = mailjet.send.create(data=data)
+                    print(result)
 
-                    messages.success(request, f'Passenger Information for {passenger_info.passenger_name} has been Updated!')
+                    messages.success(request,
+                                     f'Passenger Information for {passenger_info.passenger_name} has been Updated!')
         return redirect('update_passengers', booking_id=booking_id)
     else:
         forms = [UpdatePassengerInformaitonForm(instance=passenger_info, prefix=str(passenger_info.passenger_name)) for
@@ -415,26 +419,28 @@ def generate_booking_pdf(booking):
     response['Content-Disposition'] = f'attachment; filename=booking_{booking.id}.pdf'
     # creating pdf using reportlab lib
     p = canvas.Canvas(response)
-    p.drawString(280, 800, f'Booking Details')
+    p.drawString(280, 800, 'Booking Details')
     p.drawString(100, 780, f'Booking ID: {booking.id}')
     p.drawString(100, 760, f'Total Fare: Rs.{booking.total_fare}')
-    p.drawString(100, 740, f'Passenger Information:')
+    p.drawString(100, 740, 'Passenger Information:')
 
     y_position = 720
     passenger_informations = PassengerInformation.objects.filter(booking=booking)
     num = len(list(passenger_informations))
     for passenger_info in passenger_informations:
         p.drawString(115, y_position, f'Name: {passenger_info.passenger_name}')
-        p.drawString(115, y_position-15, f'Email: {passenger_info.passenger_email}')
+        p.drawString(115, y_position - 15, f'Email: {passenger_info.passenger_email}')
         p.drawString(320, y_position, f'Seat Type: {passenger_info.seat_type}')
-        p.drawString(320, y_position-15, f'Seat Number: {passenger_info.seat_no}')
+        p.drawString(320, y_position - 15, f'Seat Number: {passenger_info.seat_no}')
         y_position -= 30
-    p.drawString(280, 720 - 40 * num, f'Journey Details')
-    p.drawString(100, 700-40*num, f'Departure Date: {booking.departure_date}')
-    p.drawString(100, 680-40*num, f'Departure Station: {booking.train.departure_station} at {booking.train.departure_time}')
-    p.drawString(100, 660-40*num, f'Destination Station: {booking.train.destination_station} at {booking.train.reaching_time}')
-    p.drawString(50, 100, f'This is an auto-generated pdf file.')
-    p.drawString(50, 80, f'Made by DVM | All Rights Reserved.')
+    p.drawString(280, 720 - 40 * num, 'Journey Details')
+    p.drawString(100, 700 - 40 * num, f'Departure Date: {booking.departure_date}')
+    p.drawString(100, 680 - 40 * num,
+                 f'Departure Station: {booking.train.departure_station} at {booking.train.departure_time}')
+    p.drawString(100, 660 - 40 * num,
+                 f'Destination Station: {booking.train.destination_station} at {booking.train.reaching_time}')
+    p.drawString(50, 100, 'This is an auto-generated pdf file.')
+    p.drawString(50, 80, 'Made by DVM | All Rights Reserved.')
     p.showPage()
     p.save()
 
@@ -458,7 +464,6 @@ def generate_pdf_view(request):
 
 @login_required()
 def file_complaint(request):
-    message = None
     if request.method == 'POST':
         form = ComplaintForm(request.POST, request.FILES)
         if form.is_valid():

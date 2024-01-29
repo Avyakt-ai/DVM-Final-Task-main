@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import *
-from railway_staff.models import *
+from .models import Complaint
+from railway_staff.models import PassengerInformation
+
 
 class UserRegisterForm(UserCreationForm):
 

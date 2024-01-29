@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./DVM-Final-Task-main  # Build context is the root directory
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db  # This ensures that the 'web' service waits for the 'db' service to be ready before starting
+
+  db:
+      image: postgres:15  # Use the PostgreSQL 15 image from Docker Hub
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/  # Mount a volume to persist PostgreSQL data
+      environment:
+        - POSTGRES_USER=postgres  # Set the PostgreSQL username
+        - POSTGRES_PASSWORD=avi25091973  # Set the PostgreSQL password
+        - POSTGRES_DB=rail_db  # Set the name of the PostgreSQL database
+
+volumes:
+  postgres_data:  # Define a named volume for persisting PostgreSQL data
